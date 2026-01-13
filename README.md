@@ -40,11 +40,24 @@ The platform is deployed on a dedicated external server with isolated port mappi
 | MinIO Console | 7003 | 9001 |
 | Adminer | 7004 | 8080 |
 | Elasticsearch | 7005 | 9200 |
-| **Backend API** | **7006** | 4000 |
-| Storefront | 7007 | 3000 |
+| Backend API** | **7006** | 4000 |
+| **Storefront** | **7007** | 3000 |
 | Tenant Admin | 7008 | 3001 |
 | Super Admin | 7009 | 3002 |
 | Marketing | 7010 | 3003 |
+
+### Storefront Access
+Each tenant has its own dedicated storefront accessible via:
+```
+http://{server-ip}:7007/{tenant-slug}
+```
+
+**Example**:
+- Tenant "ACME Store" with slug `acme` → `http://34.18.154.179:7007/acme`
+- Tenant "Demo Shop" with slug `demo` → `http://34.18.154.179:7007/demo`
+
+> [!IMPORTANT]
+> Each storefront is **completely isolated**. Products and data are filtered by `tenantId` to ensure zero data leakage between tenants.
 
 ---
 
