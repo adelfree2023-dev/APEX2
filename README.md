@@ -22,6 +22,7 @@ Before contributing, you **must** read and agree to the following protocols. Fai
 -   [**Contribution Guide**](./CONTRIBUTING.md): How we build features at APEX.
 -   [**Pull Request Template**](./.github/PULL_REQUEST_TEMPLATE.md): The mandatory checklist for every delivery.
 -   [**System Anatomy Setup**](./SYSTEM_ANATOMY_SETUP.md): Initial setup and monorepo rules.
+-   [**HQ Dashboard**](http://34.18.154.179:7009/admin/dashboard): Central Platform Management (Super Admin).
 
 ## 🌐 Remote Deployment (GCP)
 The platform is deployed on a dedicated external server with isolated port mapping.

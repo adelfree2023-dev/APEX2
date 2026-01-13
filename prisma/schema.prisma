@@ -48,6 +48,7 @@ model Product {
   @@index([tenantId])
 }
 
+
 model Order {
   id        String   @id @default(uuid())
   tenantId  String
@@ -59,4 +60,27 @@ model Order {
 
   @@unique([id, tenantId])
   @@index([tenantId])
+}
+
+model License {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  status      String   @default("active")
+  expiryDate  DateTime
+  createdAt   DateTime @default(now())
+
+  @@unique([id, tenantId])
+  @@index([tenantId])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  action    String
+  userId    String
+  tenantId  String?
+  details   Json
+  ip        String
+  timestamp DateTime @default(now())
 }
