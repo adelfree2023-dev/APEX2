@@ -3,9 +3,9 @@
 
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
+// استخدام المكونات من packages/ui مباشرة - بدون imports
+// سنستخدم HTML عادي بدلاً من shadcn components
 
 export default function LoginPage() {
     const params = useParams();
