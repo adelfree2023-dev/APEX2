@@ -1,8 +1,8 @@
 // packages/data/src/resolvers/super-admin.resolver.ts
 import { Resolver, Query, Args, Context } from '@nestjs/graphql';
 import { UseGuards, ForbiddenException, BadRequestException } from '@nestjs/common';
-import { TenantIsolationGuard } from '../../../security/src/guards/tenant-isolation.guard';
-import { TenantFilterSchema, LicenseFilterSchema, DateRangeSchema } from '../../../security/src/schemas/super-admin/super-admin.schemas';
+import { TenantIsolationGuard } from '@apex/security';
+import { TenantFilterSchema, LicenseFilterSchema, DateRangeSchema } from '@apex/security';
 
 @Resolver()
 @UseGuards(TenantIsolationGuard)
