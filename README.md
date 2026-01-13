@@ -59,6 +59,20 @@ http://{server-ip}:7007/{tenant-slug}
 > [!IMPORTANT]
 > Each storefront is **completely isolated**. Products and data are filtered by `tenantId` to ensure zero data leakage between tenants.
 
+### Authentication
+Each tenant has dedicated authentication routes:
+```
+Register: http://{server-ip}:7007/{tenant-slug}/register
+Login:    http://{server-ip}:7007/{tenant-slug}/login
+```
+
+**Example**:
+- ACME Register: `http://34.18.154.179:7007/acme/register`
+- ACME Login: `http://34.18.154.179:7007/acme/login`
+
+> [!WARNING]
+> **Users are tenant-isolated**. A user registered in tenant A cannot login to tenant B, even with the same email address.
+
 ---
 
 ## 🚀 Quick Start (Development)

@@ -1,0 +1,12 @@
+IP: 34.18.154.179
+User: apex_platform
+Path: /home/apex_platform/apex-platform
+Git:
+
+Repo: https://github.com/adelfree2023-dev/APEX2  
+Branch: main
+Latest Commit: d9b0139
+SSH Access:
+
+ssh -i "C:\Users\Dell\.ssh\gcp_key" apex_platform@34.18.154.179
+cd apex-platform
