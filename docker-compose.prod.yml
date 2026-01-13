@@ -1,0 +1,211 @@
+# docker-compose.prod.yml
+# Production-grade setup for Apex Platform
+# Run with: docker compose -f docker-compose.prod.yml up -d
+
+version: '3.8'
+
+services:
+  # ───────────────────────────────
+  # 🗄️ DATABASE
+  # ───────────────────────────────
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: apex
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: apex_platform
+    ports:
+      - "7000:5432"
+    volumes:
+      - apex_db_data:/var/lib/postgresql/data
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: >
+      postgres -c shared_buffers=512MB
+               -c effective_cache_size=1GB
+               -c maintenance_work_mem=128MB
+               -c checkpoint_completion_target=0.9
+               -c wal_buffers=16MB
+               -c default_statistics_target=100
+               -c random_page_cost=1.1
+               -c effective_io_concurrency=200
+               -c work_mem=4MB
+               -c min_wal_size=1GB
+               -c max_wal_size=4GB
+    networks:
+      - apex_net
+
+  # ───────────────────────────────
+  # ⚡ CACHE & SESSIONS
+  # ───────────────────────────────
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru
+    ports:
+      - "7001:6379"
+    volumes:
+      - apex_redis_data:/data
+    networks:
+      - apex_net
+
+  # ───────────────────────────────
+  # 📦 OBJECT STORAGE (MinIO = S3-compatible)
+  # ───────────────────────────────
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    volumes:
+      - apex_minio_data:/data
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command: server /data --console-address ":9001"
+    ports:
+      - "7002:9000" # API
+      - "7003:9001" # Console
+    networks:
+      - apex_net
+
+  # ───────────────────────────────
+  # 🔍 SEARCH ENGINE (Elasticsearch)
+  # ───────────────────────────────
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.3
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: "-Xms1g -Xmx1g"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "7004:9200"
+    volumes:
+      - apex_es_data:/usr/share/elasticsearch/data
+    networks:
+      - apex_net
+
+  # ───────────────────────────────
+  # 🧠 BACKEND API (NestJS + GraphQL)
+  # ───────────────────────────────
+  apex-engine:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.backend
+    restart: unless-stopped
+    ports:
+      - "7006:4000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://apex:${DB_PASSWORD}@db:5432/apex_platform
+      REDIS_URL: redis://redis:6379
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      - db
+      - redis
+      - minio
+      - elasticsearch
+    networks:
+      - apex_net
+
+  # ───────────────────────────────
+  # 🖥️ STOREFRONT (Next.js)
+  # ───────────────────────────────
+  storefront:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.storefront
+    restart: unless-stopped
+    ports:
+      - "7007:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:7006/graphql
+      NEXT_PUBLIC_TENANT_ID: demo
+    depends_on:
+      - apex-engine
+    networks:
+      - apex_net
+
+  # ───────────────────────────────
+  # 👔 TENANT ADMIN (React)
+  # ───────────────────────────────
+  tenant-admin:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.tenant-admin
+    restart: unless-stopped
+    ports:
+      - "7008:3001"
+    environment:
+      REACT_APP_API_URL: http://localhost:7006/graphql
+    depends_on:
+      - apex-engine
+    networks:
+      - apex_net
+
+  # ───────────────────────────────
+  # 🏢 SUPER ADMIN (HQ)
+  # ───────────────────────────────
+  super-admin:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.super-admin
+    restart: unless-stopped
+    ports:
+      - "7009:3002"
+    environment:
+      REACT_APP_API_URL: http://localhost:7006/graphql
+    depends_on:
+      - apex-engine
+    networks:
+      - apex_net
+
+  # ───────────────────────────────
+  # 📣 MARKETING SITE
+  # ───────────────────────────────
+  marketing:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.marketing
+    restart: unless-stopped
+    ports:
+      - "7010:3003"
+    networks:
+      - apex_net
+
+  # ───────────────────────────────
+  # 🔄 TASK QUEUE (BullMQ + Redis)
+  # ───────────────────────────────
+  worker:
+    build:
+      context: .
+      dockerfile: infra/docker/Dockerfile.worker
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://apex:${DB_PASSWORD}@db:5432/apex_platform
+      REDIS_URL: redis://redis:6379
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
+    depends_on:
+      - db
+      - redis
+    networks:
+      - apex_net
+
+volumes:
+  apex_db_data:
+  apex_redis_data:
+  apex_minio_data:
+  apex_es_data:
+
+
+networks:
+  apex_net:
+    driver: bridge
