@@ -5,9 +5,12 @@
         "node": ">=20.0.0"
     },
     "scripts": {
-        "build:backend": "pnpm --filter @apex/engine build",
         "build:storefront": "pnpm --filter storefront build",
+        "build:tenant-admin": "pnpm --filter tenant-admin build",
         "build:super-admin": "pnpm --filter super-admin build",
+        "build:marketing": "pnpm --filter marketing build",
+        "build:backend": "pnpm --filter @apex/engine build",
+        "test:unit": "vitest run",
         "test:e2e": "playwright test",
         "lint": "eslint .",
         "type-check": "tsc --noEmit"
