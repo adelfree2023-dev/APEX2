@@ -9,6 +9,12 @@
         "skipLibCheck": true,
         "outDir": "./dist",
         "rootDir": ".",
+        "baseUrl": ".",
+        "paths": {
+            "@apex/security": [
+                "../security/src/index.ts"
+            ]
+        },
         "declaration": true,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true

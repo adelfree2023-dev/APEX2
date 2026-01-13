@@ -1,15 +1,17 @@
 // packages/data/src/resolvers/super-admin.resolver.ts
 import { Resolver, Query, Args, Context } from '@nestjs/graphql';
-import { UseGuards, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { UseGuards, ForbiddenException, BadRequestException, ExecutionContext } from '@nestjs/common';
 import { TenantIsolationGuard } from '@apex/security';
 import { TenantFilterSchema, LicenseFilterSchema, DateRangeSchema } from '@apex/security';
+import { z } from 'zod';
 
 @Resolver()
 @UseGuards(TenantIsolationGuard)
 export class SuperAdminResolver {
 
-    private validateSuperAdmin(context: any) {
-        const { user, headers } = context;
+    private validateSuperAdmin(context: ExecutionContext) {
+        const request = context.switchToHttp().getRequest();
+        const { user, headers } = request;
 
         // Rule: Must be a SUPER_ADMIN
         if (user?.role !== 'SUPER_ADMIN') {
@@ -23,7 +25,10 @@ export class SuperAdminResolver {
     }
 
     @Query('tenants')
-    async getTenants(@Args('filters') filters: any, @Context() context: any) {
+    async getTenants(
+        @Args('filters') filters: z.infer<typeof TenantFilterSchema>,
+        @Context() context: ExecutionContext
+    ) {
         this.validateSuperAdmin(context);
 
         // Zod Validation
@@ -34,7 +39,10 @@ export class SuperAdminResolver {
     }
 
     @Query('licenses')
-    async getLicenses(@Args('filters') filters: any, @Context() context: any) {
+    async getLicenses(
+        @Args('filters') filters: z.infer<typeof LicenseFilterSchema>,
+        @Context() context: ExecutionContext
+    ) {
         this.validateSuperAdmin(context);
 
         const validatedFilters = LicenseFilterSchema.parse(filters);
@@ -43,7 +51,10 @@ export class SuperAdminResolver {
     }
 
     @Query('analytics')
-    async getAnalytics(@Args('dateRange') dateRange: any, @Context() context: any) {
+    async getAnalytics(
+        @Args('dateRange') dateRange: z.infer<typeof DateRangeSchema>,
+        @Context() context: ExecutionContext
+    ) {
         this.validateSuperAdmin(context);
 
         const validatedRange = DateRangeSchema.parse(dateRange);
