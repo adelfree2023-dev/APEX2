@@ -73,6 +73,20 @@ Login:    http://{server-ip}:7007/{tenant-slug}/login
 > [!WARNING]
 > **Users are tenant-isolated**. A user registered in tenant A cannot login to tenant B, even with the same email address.
 
+### Products & Shop
+Each tenant has a dedicated shop with their own product catalog:
+```
+Shop Page:         http://{server-ip}:7007/{tenant-slug}/shop
+Product Detail:    http://{server-ip}:7007/{tenant-slug}/product/{product-slug}
+```
+
+**Example**:
+- ACME Shop: `http://34.18.154.179:7007/acme/shop`
+- ACME Product: `http://34.18.154.179:7007/acme/product/blue-tshirt`
+
+> [!IMPORTANT]
+> **Products are tenant-isolated**. Each tenant has their own catalog. Product slugs are unique per tenant (same slug can exist in different tenants).
+
 ---
 
 ## 🚀 Quick Start (Development)
