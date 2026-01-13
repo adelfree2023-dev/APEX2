@@ -1,0 +1,4 @@
+# Placeholder for other services to satisfy docker-compose dependencies
+FROM node:20-alpine
+WORKDIR /app
+CMD ["echo", "Service Placeholder"]
