@@ -1,4 +1,4 @@
-// apps/storefront/app/(auth)/register/page.tsx
+// apps/storefront/app/[tenant]/register/page.tsx
 'use client';
 
 import { useState } from 'react';
@@ -20,8 +20,6 @@ export default function RegisterPage() {
         setLoading(true);
 
         try {
-            // TODO: Get actual tenantId from slug
-            // For now, using slug as tenantId placeholder
             const response = await fetch('/api/auth/register', {
                 method: 'POST',
                 headers: {
@@ -41,11 +39,7 @@ export default function RegisterPage() {
             }
 
             const data = await response.json();
-
-            // Store token
             localStorage.setItem('auth_token', data.token);
-
-            // Redirect to storefront
             router.push(`/${tenantSlug}`);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Registration failed');
@@ -56,63 +50,66 @@ export default function RegisterPage() {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-            <Card className="w-full max-w-md">
-                <CardHeader>
-                    <CardTitle>Create Account</CardTitle>
-                    <CardDescription>
-                        Register for {tenantSlug} store
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form onSubmit={handleRegister} className="space-y-4">
-                        {error && (
-                            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                                {error}
-                            </div>
-                        )}
+            <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-6">
+                <div className="mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900">Create Account</h2>
+                    <p className="text-gray-600 mt-1">Register for {tenantSlug} store</p>
+                </div>
 
-                        <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                                Email
-                            </label>
-                            <Input
-                                id="email"
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                                placeholder="your@email.com"
-                            />
+                <form onSubmit={handleRegister} className="space-y-4">
+                    {error && (
+                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                            {error}
                         </div>
+                    )}
 
-                        <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                                Password
-                            </label>
-                            <Input
-                                id="password"
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                required
-                                minLength={8}
-                                placeholder="At least 8 characters"
-                            />
-                        </div>
+                    <div>
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                            Email
+                        </label>
+                        <input
+                            id="email"
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            placeholder="your@email.com"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
 
-                        <Button type="submit" className="w-full" disabled={loading}>
-                            {loading ? 'Creating account...' : 'Register'}
-                        </Button>
+                    <div>
+                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                            Password
+                        </label>
+                        <input
+                            id="password"
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            minLength={8}
+                            placeholder="At least 8 characters"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
 
-                        <p className="text-center text-sm text-gray-600">
-                            Already have an account?{' '}
-                            <a href={`/${tenantSlug}/login`} className="text-blue-600 hover:underline">
-                                Login
-                            </a>
-                        </p>
-                    </form>
-                </CardContent>
-            </Card>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                        {loading ? 'Creating account...' : 'Register'}
+                    </button>
+
+                    <p className="text-center text-sm text-gray-600">
+                        Already have an account?{' '}
+                        <a href={`/${tenantSlug}/login`} className="text-blue-600 hover:underline">
+                            Login
+                        </a>
+                    </p>
+                </form>
+            </div>
         </div>
     );
 }
